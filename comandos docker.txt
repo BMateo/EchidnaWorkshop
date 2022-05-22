@@ -1,0 +1,3 @@
+docker run -it -v C:/Users/GERMAN/Desktop/echidnaWorkshop/abdk-libraries-solidity:/home/training trailofbits/eth-security-toolbox
+
+echidna-test EchidnaTest.sol --contract Test --test-mode assertion --corpus-dir corpus --seq-len 1 --test-limit 1000000
