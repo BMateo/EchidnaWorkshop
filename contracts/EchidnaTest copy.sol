@@ -63,21 +63,39 @@ contract Test {
         return ABDKMath64x64.muli(x, y);
     }
 
+    function mulu (int128 x, uint256 y) public returns (uint256) {
+        return ABDKMath64x64.mulu(x, y);
+    }
+
     function div(int128 x, int128 y) public returns (int128) {
         return ABDKMath64x64.div(x, y);
     }
 
-    function pow(int128 x, uint256 y) public returns (int128) {
-        return ABDKMath64x64.pow(x, y);
+    function divi (int256 x, int256 y) public returns (int128){
+        return ABDKMath64x64.divi(x, y);
+    } 
+
+    function divu (uint256 x, uint256 y) public returns (int128){
+        return ABDKMath64x64.divu(x, y);
     }
 
     function neg(int128 x) public returns (int128) {
         return ABDKMath64x64.neg(x);
     }
 
+    function abs (int128 x) public returns (int128){
+        return ABDKMath64x64.abs(x);
+    }
+
     function inv(int128 x) public returns (int128) {
         return ABDKMath64x64.inv(x);
     }
+
+    function pow(int128 x, uint256 y) public returns (int128) {
+        return ABDKMath64x64.pow(x, y);
+    }
+
+    
 
     function sqrt(int128 x) public returns (int128) {
         return ABDKMath64x64.sqrt(x);
@@ -205,17 +223,13 @@ contract Test {
         }
     }
 
-    /* Check that the following statements are true: 
-      x & y >= 0  & x >= y => result <= x & result <= y & result >= 0
-      x & y >= 0  & x <= y => result <= x & result <= y & result <= 0
-      x & y <= 0  & x >= y => result >= x & result >= y & result >= 0
-      x & y <= 0  & x <= y => result >= x & result >= y & result >= 0   
+    /* FALTA TESTEAR LA RESTA
         */
     function testSub(int128 x, int128 y) public {
         // TODO
         int128 result64x64 = this.sub(this.fromInt(x), this.fromInt(y));
         int128 resultInt = this.toInt(result64x64);
-         debug("", result64x64);
+        int128 resultInverted = this.sub(this.fromInt(y), this.fromInt(x));
         bool underflow = result64x64 < MIN_64x64
             ? true
             : false;
@@ -226,19 +240,18 @@ contract Test {
                 assert(false); //should fail
             } catch {}
         }
-        if (x >= 0 && y >= 0 && x >= y) {
-            assert(resultInt <= x && resultInt <= y && resultInt >= 0);
+        if( (x==0 && y == 0) || x == y){
+            assert(resultInt == 0);
             return;
-        } else if (x >= 0 && y >= 0 && x < y) {
-            assert(resultInt <= x && resultInt <= y && resultInt <= 0);
+        } else if ( y == 0){
+            assert(resultInt == x);
             return;
-        } else if (x <= 0 && y <= 0 && x >= y) {
-            assert(resultInt >= x && resultInt <= y);
-            return;
-        } else if (x <= 0 && y <= 0 && x < y) {
-            assert(resultInt >= x && resultInt >= y && resultInt <= 0);
+        } else if ( x == 0){
+            assert(resultInt == this.neg(y));
             return;
         }
+
+        assert(result64x64 != resultInverted);
     }
 
     
@@ -275,6 +288,7 @@ contract Test {
 
     function testMuli(int128 x, int256 y) public {
         int128 x64 = this.fromInt(x);
+        int256 max256 = 2**255 -1;
         bool outOfRange; 
         //pre-conditions
         if(x64 == MIN_64x64){
@@ -287,14 +301,24 @@ contract Test {
         }
 
         //post-conditions
-        int256 result = this.muli(x64,y);
+        int result = this.muli(x64,y);
         bool negativeResult = result >= 0 ? false : true;
         if(negativeResult){
-            assert(result <= 0x8000000000000000000000000000000000000000000000000000000000000000);
+            assert(result <= max256);
             return;
         } else {
             assert(result <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
         }
+    }
+
+    function testMulu (int128 x, uint256 y) public{
+        x = x % (MAX_64x64);
+        
+        uint256 result = this.mulu(fromInt(x),y);
+         //post-conditions
+         if( x == 0 || y == 0){
+             assert(result == 0);
+         }
     }
 
     function testDiv(int128 x, int128 y) public {
@@ -323,4 +347,140 @@ contract Test {
             assert(result64x64 >= 0);
         }
     }
+
+    function testDivi (int256 x, int256 y) public {
+        // pre-conditions
+        bool divitionByZero = y == 0 ? true : false;
+        bool negativeResult;
+        int128 result = this.divi(x,y);
+        if (x < 0 && y < 0){
+            negativeResult = false;
+        }else if(x < 0 || y < 0){
+            negativeResult = true;
+        } 
+        
+
+        if(divitionByZero){
+             try this.divi(x,y){
+                 assert(false); //should fail
+             } catch{}
+        }
+        if(x==0) {
+            assert(result == 0);
+            return;
+        }
+
+        //post-conditions
+        
+        if(negativeResult) {
+            assert(-result <= -MIN_64x64);
+        } else {
+            assert(result <= MAX_64x64);
+        }
+        
+    } 
+
+    function testDivu (uint256 x, uint256 y) public {
+        
+        //pre-conditions
+        bool divitionByZero = y == 0 ? true : false;
+        
+        if (divitionByZero) {
+            try this.divu(x,y) {
+                assert(false); // should fail
+            } catch {}
+        }
+        //post-conditions
+        int128 result = this.divu(x,y);
+        assert(result <= MAX_64x64);
+
+    }
+
+    function testNeg (int128 x) public {
+        //pre-conditions
+        bool overflow = x == MIN_64x64 ? true : false;
+
+        if(overflow) {
+            try this.neg(x) {
+                assert(false); //should fail
+            } catch {}
+        }
+        //post-conditions
+        int128 result = this.neg(fromInt(x));
+        if(x == 0){
+            assert(result == 0);
+        } else if (x < 0){
+            assert(result > 0);
+        } else if (x > 0){
+            assert(result < 0);
+        }
+    }
+
+    function testAbs (int128 x) public {
+        int128 x64 = fromInt(x);
+        //pre-conditions
+        bool overflow = x == MIN_64x64 ? true : false;
+
+        if(overflow){
+            try this.abs(x) {
+                assert(false);
+            } catch{}
+        }
+        int128 result = this.abs(x64);
+        if(x == 0){
+            assert(result == 0);
+            return;
+        }
+
+        if(x > 0) {
+            assert(result == x64);
+        } else {
+            assert(result == -x64);
+        }
+
+        
+
+
+    }
+
+    function testInv(int128 x) public {
+        int128 x64 = fromInt(x);
+        require(x!=0);
+        //pre-conditions
+        bool divitionByZero = x == 0 ? true : false;
+        if(divitionByZero){
+            try this.neg(fromInt(x)){
+                assert(false); //should fail
+            } catch {}
+        }
+        int128 result = this.inv(fromInt(x));
+        int128 resultInt = this.toInt(result);
+        //post-conditions
+        assert(result >= MIN_64x64 && result <= MAX_64x64);
+
+        if(x > 0){
+            if(x64 == one){
+                assert(result == one || result == -one);
+                return;
+            } else if (x64 < one){
+                assert(result > one);
+                return;
+            } else if(x64 > one){
+                assert(result < one);
+                return;
+             }
+        } else {
+            if(x64 == -one){
+                assert(result == -one);
+                return;
+            } else if (x64 < -one){
+                assert(result > -one);
+                return;
+            } else if(x64 > one){
+                assert(result < -one);
+                return;
+             }
+        }
+    }
+
 }

@@ -21,5 +21,8 @@ describe("Greeter", function () {
    console.log((result/2**64).toString());
    result = await greeter.shift(1,64);
    console.log("shifted value: ", result.toString());
+
+   result = await greeter.sub(await greeter.fromInt(-1),await greeter.fromInt(-2));
+   console.log("sub value: ", (await greeter.toInt(result)).toString());
   });
 });

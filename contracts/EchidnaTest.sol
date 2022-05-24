@@ -59,6 +59,10 @@ contract Test {
         return ABDKMath64x64.mul(x, y);
     }
 
+    function muli (int128 x, int256 y) public returns (int256){
+        return ABDKMath64x64.muli(x, y);
+    }
+
     function div(int128 x, int128 y) public returns (int128) {
         return ABDKMath64x64.div(x, y);
     }
@@ -211,6 +215,7 @@ contract Test {
         // TODO
         int128 result64x64 = this.sub(this.fromInt(x), this.fromInt(y));
         int128 resultInt = this.toInt(result64x64);
+         debug("", result64x64);
         bool underflow = result64x64 < MIN_64x64
             ? true
             : false;
@@ -223,12 +228,16 @@ contract Test {
         }
         if (x >= 0 && y >= 0 && x >= y) {
             assert(resultInt <= x && resultInt <= y && resultInt >= 0);
-        } else if (x >= 0 && y >= 0 && x <= y) {
-            assert(resultInt >= x && resultInt >= y && resultInt >= 0);
+            return;
+        } else if (x >= 0 && y >= 0 && x < y) {
+            assert(resultInt <= x && resultInt <= y && resultInt <= 0);
+            return;
         } else if (x <= 0 && y <= 0 && x >= y) {
             assert(resultInt >= x && resultInt <= y);
-        } else if (x <= 0 && y <= 0 && x <= y) {
+            return;
+        } else if (x <= 0 && y <= 0 && x < y) {
             assert(resultInt >= x && resultInt >= y && resultInt <= 0);
+            return;
         }
     }
 
@@ -261,6 +270,30 @@ contract Test {
             assert(resultInt <= x && resultInt <= y && resultInt <= 0);
         } else {
             assert(resultInt >= x && resultInt >= y && resultInt >= 0);
+        }
+    }
+
+    function testMuli(int128 x, int256 y) public {
+        int128 x64 = this.fromInt(x);
+        bool outOfRange; 
+        //pre-conditions
+        if(x64 == MIN_64x64){
+            outOfRange = y < -0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF || y > 0x1000000000000000000000000000000000000000000000000 ? true : false;
+        }
+        if (outOfRange) {
+            try this.muli(x64, y) {
+                assert(false); //should fail
+            } catch {}
+        }
+
+        //post-conditions
+        int256 result = this.muli(x64,y);
+        bool negativeResult = result >= 0 ? false : true;
+        if(negativeResult){
+            assert(result <= 0x8000000000000000000000000000000000000000000000000000000000000000);
+            return;
+        } else {
+            assert(result <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
         }
     }
 
