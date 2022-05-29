@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-4-Clause
 pragma solidity ^0.8.1;
 
-import "ABDKMath64x64.sol";
+import "./ABDKMath64x64.sol";
 
 contract Test {
     int128 internal zero = ABDKMath64x64.fromInt(0);

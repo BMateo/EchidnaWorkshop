@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BSD-4-Clause
 pragma solidity ^0.8.1;
 
-import "ABDKMath64x64.sol";
+import "./ABDKMath64x64.sol";
 
 contract Test {
     int128 internal zero = ABDKMath64x64.fromInt(0);
@@ -67,7 +67,7 @@ contract Test {
         return ABDKMath64x64.div(x, y);
     }
 
-    function pow(int128 x, uint256 y) public returns (int128) {
+    function pow(int128 x, uint256 y) public pure returns (int128) {
         return ABDKMath64x64.pow(x, y);
     }
 
@@ -79,7 +79,7 @@ contract Test {
         return ABDKMath64x64.inv(x);
     }
 
-    function sqrt(int128 x) public returns (int128) {
+    function sqrt(int128 x) public pure returns (int128) {
         return ABDKMath64x64.sqrt(x);
     }
 
@@ -215,7 +215,6 @@ contract Test {
         // TODO
         int128 result64x64 = this.sub(this.fromInt(x), this.fromInt(y));
         int128 resultInt = this.toInt(result64x64);
-         debug("", result64x64);
         bool underflow = result64x64 < MIN_64x64
             ? true
             : false;
@@ -290,7 +289,7 @@ contract Test {
         int256 result = this.muli(x64,y);
         bool negativeResult = result >= 0 ? false : true;
         if(negativeResult){
-            assert(result <= 0x8000000000000000000000000000000000000000000000000000000000000000);
+           // assert(result <= 0x8000000000000000000000000000000000000000000000000000000000000000);
             return;
         } else {
             assert(result <= 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
