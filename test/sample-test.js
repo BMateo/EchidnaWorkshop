@@ -5,7 +5,7 @@ describe("Greeter", function () {
   let greeter;
   before(async () => {
     [account1, account2, account3, account4, account5] = await ethers.getSigners();
-    const Greeter = await ethers.getContractFactory("Greeter");
+    const Greeter = await ethers.getContractFactory("Echidna-CAREX");//this contract should have the wrappers as pure functions to this test to work
      greeter = await Greeter.deploy();
     await greeter.deployed();
   });
